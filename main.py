@@ -1,7 +1,6 @@
 import os
 import logging
 import telebot
-from background import keep_alive  # Функция для поддержания работы сервера
 import time
 
 # Получаем BOT_TOKEN
@@ -16,6 +15,10 @@ logging.basicConfig(level=logging.INFO)
 # Ссылка для регистрации и мини-приложения
 REGISTRATION_URL = "https://1wxxlb.com/casino/list/4?p=dqva"
 MINI_APP_URL = "https://codepen.io/decevitatedei/full/gOVZXzL"
+
+# Удаляем вебхук перед запуском polling
+import requests
+requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/deleteWebhook")
 
 # Обработчик команды /start
 @bot.message_handler(commands=['start'])
@@ -74,9 +77,6 @@ def process_user_id(message):
     else:
         bot.send_message(message.chat.id, "Неверный формат ID ❌ Попробуйте пожалуйста снова.")
         bot.register_next_step_handler(message, process_user_id)  # Запрашиваем ID заново
-
-# Запускаем Flask-сервер для поддержания работы
-keep_alive()
 
 # Запуск бота
 print("Бот запущен и работает...")
