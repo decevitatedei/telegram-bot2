@@ -2,6 +2,8 @@ import os
 import logging
 import telebot
 import time
+import requests
+from flask import Flask, request
 
 # Получаем BOT_TOKEN
 BOT_TOKEN = '7840822796:AAEmLsshtGysypJDgJR1CWz2RGqvnksehRQ'  # Укажите свой токен сюда
@@ -17,7 +19,6 @@ REGISTRATION_URL = "https://1wxxlb.com/casino/list/4?p=dqva"
 MINI_APP_URL = "https://codepen.io/decevitatedei/full/gOVZXzL"
 
 # Удаляем вебхук перед запуском polling
-import requests
 requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/deleteWebhook")
 
 # Обработчик команды /start
@@ -78,6 +79,28 @@ def process_user_id(message):
         bot.send_message(message.chat.id, "Неверный формат ID ❌ Попробуйте пожалуйста снова.")
         bot.register_next_step_handler(message, process_user_id)  # Запрашиваем ID заново
 
-# Запуск бота
+# Flask приложение для Render
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Бот работает 24/7"
+
+# Обработчик, чтобы бот продолжал работать
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    json_str = request.get_data().decode('UTF-8')
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return '', 200
+
+# Получаем порт из переменной окружения
+port = int(os.environ.get("PORT", 5000))
+
+# Запуск Flask приложения для Render
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=port)
+
+# Запуск бота с polling
 print("Бот запущен и работает...")
 bot.polling(non_stop=True, interval=0)
